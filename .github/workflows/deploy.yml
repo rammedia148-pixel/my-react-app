@@ -32,5 +32,5 @@ jobs:
           password: ${{ secrets.CPANEL_PASSWORD }}
           protocol: ftp # change to ftp if server doesn't support FTPS
           port: ${{ secrets.CPANEL_PORT }}
-          local-dir: ./dist # vite build output
+          local-dir: ./dist/ # vite build output
           server-dir: /react/ # destination folder on cPanel

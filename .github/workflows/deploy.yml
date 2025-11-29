@@ -1,0 +1,36 @@
+name: Build and Deploy to cPanel
+
+on:
+  push:
+    branches:
+      - master # Your branch name (change if needed)
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: "18"
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Build Project
+        run: npm run build
+
+      - name: Upload via FTP to cPanel
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.CPANEL_HOST }}
+          username: ${{ secrets.CPANEL_USERNAME }}
+          password: ${{ secrets.CPANEL_PASSWORD }}
+          protocol: ftp # change to ftp if server doesn't support FTPS
+          port: ${{ secrets.CPANEL_PORT }}
+          local-dir: ./dist # vite build output
+          server-dir: /react/ # destination folder on cPanel

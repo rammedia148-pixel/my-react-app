@@ -1,4 +1,19 @@
-#!/usr/bin/env sh
-. "$(dirname -- "$0")/_/husky.sh"
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
 
-npx --no-install lint-staged
+echo "🚀 Running pre-commit checks..."
+
+echo "🔎 Running lint-staged..."
+npx lint-staged
+LINT_RESULT=$?
+echo "📌 Lint-staged exit code: $LINT_RESULT"
+
+echo "🔎 Checking for merge conflict markers..."
+
+if [ $LINT_RESULT -ne 0 ]; then
+  echo "❌ Lint-staged failed!"
+  exit 1
+fi
+
+echo "✨ All checks passed!"
+exit 0

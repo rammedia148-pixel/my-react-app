@@ -1,19 +1,20 @@
-#!/bin/sh
+#!/usr/bin/env sh
 . "$(dirname "$0")/_/husky.sh"
 
 echo "🚀 Running pre-commit checks..."
 
-echo "🔎 Running lint-staged..."
-npx lint-staged
-LINT_RESULT=$?
-echo "📌 Lint-staged exit code: $LINT_RESULT"
+# Run lint-staged
+npx lint-staged || exit 1
 
 echo "🔎 Checking for merge conflict markers..."
 
-if [ $LINT_RESULT -ne 0 ]; then
-  echo "❌ Lint-staged failed!"
-  exit 1
-fi
+# # Merge conflict detection (ignore Husky, node_modules, dist)
+# CONFLICTS=$(grep -rn "<<<<<<<" . --exclude-dir=.husky --exclude-dir=node_modules --exclude-dir=dist)
 
-echo "✨ All checks passed!"
-exit 0
+# if [ -n "$CONFLICTS" ]; then
+#   echo "❌ Merge conflicts found at:"
+#   echo "$CONFLICTS"
+#   exit 1
+# fi
+
+echo "✔ Pre-commit checks passed!"

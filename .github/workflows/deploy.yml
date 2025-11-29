@@ -33,4 +33,4 @@ jobs:
           protocol: ftp # change to ftp if server doesn't support FTPS
           port: 21
           local-dir: ./dist/ # vite build output
-          server-dir: /testing/ # destination folder on cPanel
+          server-dir: ./ # destination folder on cPanel

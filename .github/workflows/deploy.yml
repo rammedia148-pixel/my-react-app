@@ -27,8 +27,8 @@ jobs:
       - name: Upload via FTP to cPanel
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
-          server: "103.86.176.168"
-          username: "ram@testing.vmvanigam.com"
+          server: ${{ secrets.CPANEL_HOST }}
+          username: ${{ secrets.CPANEL_USERNAME }}
           password: ${{ secrets.CPANEL_PASSWORD }}
           protocol: ftp # change to ftp if server doesn't support FTPS
           port: 21

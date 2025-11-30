@@ -4,6 +4,10 @@ pipeline {
     environment {
         PATH      = "/bin:/usr/bin:/usr/local/bin:${env.PATH}"
         BUILD_DIR = "dist"      // React build output folder
+        IMAGE_NAME = "react-app"
+        CONTAINER_NAME = "react-app-container"
+        HOST_PORT = "8081"
+        CONTAINER_PORT = "3000" // must match EXPOSE / serve -l in Dockerfile
     }
 
     stages {
@@ -67,6 +71,33 @@ pipeline {
                 }
             }
         }
+
+        stage('Docker Build') {
+            steps {
+                sh '''
+                    echo "=== Building Docker Image ==="
+                    docker build -t ${IMAGE_NAME}:${BUILD_NUMBER} .
+                '''
+            }
+        }
+
+        stage('Docker Run') {
+            steps {
+                sh '''
+                    echo "=== Removing old container if it exists ==="
+                    docker rm -f ${CONTAINER_NAME} || true
+
+                    echo "=== Running new container ==="
+                    docker run -d \
+                      -p ${HOST_PORT}:${CONTAINER_PORT} \
+                      --name ${CONTAINER_NAME} \
+                      ${IMAGE_NAME}:${BUILD_NUMBER}
+
+                    echo "=== Currently running containers ==="
+                    docker ps
+                '''
+            }
+        }
     }
 
     post {
@@ -77,4 +108,5 @@ pipeline {
             echo "❌ Build or deploy failed. Check logs above."
         }
     }
+
 }

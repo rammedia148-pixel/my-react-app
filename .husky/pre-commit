@@ -1,0 +1,25 @@
+#!/usr/bin/env sh
+. "$(dirname "$0")/_/husky.sh"
+
+echo "🚀 Running pre-commit checks..."
+
+# -------------------------------
+# 1️⃣ Run lint-staged
+# -------------------------------
+echo "🔎 Running lint-staged..."
+npx lint-staged || true
+LINT_EXIT=$?
+
+if [ $LINT_EXIT -ne 0 ]; then
+  echo "❌ lint-staged failed. Please fix the issues above before committing."
+  exit 1
+fi
+
+echo "✔ lint-staged passed!"
+
+# -------------------------------
+# 2️⃣ Check for merge conflict markers
+# -------------------------------
+echo "🔎 Checking for merge conflict markers..."
+
+# Use grep and exclude

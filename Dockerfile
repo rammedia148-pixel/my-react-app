@@ -1,6 +1,6 @@
 FROM node:18-alpine
 
-WORKDIR /
+WORKDIR /app
 
 # Copy project files
 COPY package*.json ./
@@ -8,7 +8,7 @@ RUN npm install
 
 COPY . .
 
-# Build Vite app → output in /dist
+# Build Vite app → output in /app/dist
 RUN npm run build
 
 # Install serve globally to serve static files
@@ -19,3 +19,4 @@ EXPOSE 3000
 # Serve static files from dist
 
 CMD ["serve", "-s", "dist", "-l", "3000"]
+

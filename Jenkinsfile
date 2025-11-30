@@ -2,80 +2,79 @@ pipeline {
     agent any
 
     environment {
-        NODE_VERSION = "18"       // change if needed
-        BUILD_DIR = "dist"        // For Vite/React. Change to "build" if CRA.
+        PATH      = "/bin:/usr/bin:/usr/local/bin:${env.PATH}"
+        BUILD_DIR = "dist"      // React build output folder
     }
 
     stages {
 
         stage('Checkout') {
             steps {
-                echo "Pulling latest code..."
-                git branch: 'master',          // <-- change branch (main/master/dev)
-            url: 'https://github.com/rammedia148-pixel/my-react-app.git'
+                echo "Checking out source code..."
+                git credentialsId: 'rammedia148-pixel', url: 'https://github.com/rammedia148-pixel/my-react-app.git'
             }
         }
 
-        // stage('Setup Node') {
-        //     steps {
-        //         echo "📦 Setting up Node.js..."
-        //         sh "nvm install $NODE_VERSION"
-        //         sh "nvm use $NODE_VERSION"
-        //     }
-        // }
+        stage('Node & NPM Info') {
+            steps {
+                sh '''
+                    echo "Using PATH: $PATH"
+                    node -v
+                    npm -v
+                '''
+            }
+        }
 
         stage('Install Dependencies') {
             steps {
-                echo "📦 Installing dependencies..."
-                sh 'npm install'
+                sh '''
+                    echo "Cleaning previous installs..."
+                    rm -rf node_modules package-lock.json
+
+                    echo "Installing npm dependencies..."
+                    npm install
+                '''
             }
         }
 
-        stage('Run Build') {
+        stage('Build App') {
             steps {
-                echo "🏗️ Running build..."
-                sh 'npm run build'
+                sh '''
+                    echo "Building the project..."
+                    npm run build
+                    echo "Listing workspace after build:"
+                    ls -al
+                '''
             }
         }
-
-        // stage('Archive Build Artifacts') {
-        //     steps {
-        //         echo "📦 Archiving build output..."
-        //         archiveArtifacts artifacts: "${BUILD_DIR}/**", fingerprint: true
-        //     }
-        // }
 
         stage('Deploy') {
             steps {
                 echo "🚀 Deploying build to server..."
 
-                // UNCOMMENT one of the deploy methods below
+                // Use Jenkins credentials (add them in Jenkins → Credentials, e.g. ID: cpanel-ftp)
+                withCredentials([usernamePassword(credentialsId: 'cpanel-ftp', usernameVariable: 'FTP_USER', passwordVariable: 'FTP_PASS')]) {
+                    sh '''
+                        echo "Zipping build directory..."
+                        rm -f app.zip
+                        cd "${BUILD_DIR}"
+                        zip -r ../app.zip .
 
-                // ----------- OPTION 1: Deploy to CPanel via FTP ----------
-                sh '''
-                curl -T "${BUILD_DIR}/*" -u "ram@testing.vmvanigam.com:t([K+)k%wO(*MT)S" ftp://103.86.176.168/testing/
-                '''
-
-                // ----------- OPTION 2: Deploy via SSH/SFTP ---------------
-                // sh '''
-                // scp -r ${BUILD_DIR}/* user@server:/path/to/deploy/
-                // '''
-
-                // ----------- OPTION 3: Deploy to Nginx/Apache ------------
-                // sh '''
-                // rm -rf /var/www/html/*
-                // cp -r ${BUILD_DIR}/* /var/www/html/
-                // '''
+                        echo "Uploading app.zip via FTP..."
+                        cd ..
+                        curl -T "app.zip" -u "${FTP_USER}:${FTP_PASS}" "ftp://103.86.176.168:21/app.zip"
+                    '''
+                }
             }
         }
     }
 
     post {
         success {
-            echo "🎉 Deployment successful!"
+            echo "✅ Build and deploy completed successfully."
         }
         failure {
-            echo "❌ Deployment failed!"
+            echo "❌ Build or deploy failed. Check logs above."
         }
     }
 }
